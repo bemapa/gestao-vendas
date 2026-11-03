@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Prazo Certo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Manrope:wght@400;500;700&display=swap">
+<style>
+/* Layout: uma coluna central para usar no celular, com menu lateral aberto pelo botão de 3 linhas. */
+:root {
+  --bg: #000000;
+  --panel: #07110a;
+  --panel-2: #0d1f12;
+  --line: #1a4a26;
+  --neon: #39ff14;
+  --neon-dim: #27b50e;
+  --text: #e6ffe0;
+  --muted: #9cc796;
+  --alert: #ffd84a;
+  --display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --body: "Manrope", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font: 15px/1.45 var(--body); }
+button, input, select, textarea { font: inherit; color: inherit; }
+h1, h2, h3 { font-family: var(--display); margin: 0; line-height: 1.15; text-wrap: balance; }
+h1 { font-size: 24px; color: var(--neon); }
+h2 { font-size: 18px; color: var(--neon); }
+h3 { font-size: 15px; }
+p { margin: 0; }
+a { color: var(--neon); }
+.muted { color: var(--muted); font-size: 13px; }
+.num { font-variant-numeric: tabular-nums; }
+
+#demo-bar { background: var(--neon); color: #000; font-weight: 700; font-size: 13px; text-align: center; padding-block: 5px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; align-items: center; gap: 12px; background: var(--bg); border-bottom: 1px solid var(--line); padding-block: 9px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+#brand { font: 700 18px var(--display); color: var(--neon); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#who { margin-left: auto; color: var(--muted); font-size: 13px; white-space: nowrap; }
+.icon-btn { flex: none; width: 42px; height: 42px; background: var(--panel); border: 1px solid var(--line); color: var(--neon); font-size: 20px; line-height: 1; cursor: pointer; position: relative; }
+.badge { display: inline-block; min-width: 20px; padding: 0 5px; background: var(--alert); color: #000; font-size: 12px; font-weight: 700; text-align: center; border-radius: 10px; }
+.icon-btn .badge { position: absolute; top: -7px; right: -7px; }
+
+#drawer-shade { position: fixed; inset: 0; background: rgba(0, 0, 0, .7); z-index: 9; }
+#drawer { position: fixed; top: 0; bottom: 0; left: 0; width: min(290px, 84vw); z-index: 10; background: var(--panel); border-right: 1px solid var(--neon-dim); padding: calc(env(safe-area-inset-top, 0px) + 14px) 12px 14px max(12px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 4px; overflow: auto; }
+#drawer button { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 12px; background: transparent; border: 1px solid transparent; cursor: pointer; font-weight: 700; }
+#drawer button:hover, #drawer button:focus-visible { border-color: var(--line); outline: none; }
+#drawer button.on { background: var(--neon); color: #000; }
+#drawer .out { margin-top: auto; color: var(--muted); font-weight: 500; }
+
+main { max-width: 860px; margin: 0 auto; display: grid; gap: 14px; padding-block: 16px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main > *, .col > * { min-width: 0; }
+.head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.card { background: var(--panel); border: 1px solid var(--line); padding: 14px; display: grid; gap: 10px; }
+.stats { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.stat { background: var(--panel); border: 1px solid var(--line); padding: 12px 14px; }
+.stat .v { font: 700 clamp(18px, 5vw, 25px)/1.15 var(--display); color: var(--neon); font-variant-numeric: tabular-nums; margin-top: 3px; overflow-wrap: break-word; }
+.stat.hot { border-color: var(--neon); }
+.stat.warn { border-color: var(--alert); }
+.stat.warn .v { color: var(--alert); }
+.list { display: grid; }
+.item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 10px; border-top: 1px solid var(--line); }
+.item:first-child { border-top: 0; padding-top: 0; }
+.item:last-child { padding-bottom: 0; }
+.item > div:first-child { min-width: 0; overflow-wrap: anywhere; }
+.right { text-align: right; flex: none; }
+.money { font-weight: 700; color: var(--neon); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 7px; border: 1px solid var(--neon-dim); color: var(--neon); white-space: nowrap; }
+.tag.wait, .tag.low { color: var(--alert); border-color: var(--alert); }
+.tag.off { color: var(--muted); border-color: var(--line); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; padding: 8px 14px; background: var(--neon); color: #000; border: 1px solid var(--neon); font-weight: 700; cursor: pointer; text-decoration: none; text-align: center; }
+.btn:hover, .btn:focus-visible { box-shadow: 0 0 0 2px var(--text); outline: none; }
+.btn.ghost { background: transparent; color: var(--neon); border-color: var(--neon-dim); }
+.btn.small { min-height: 34px; padding: 4px 10px; font-size: 13px; }
+.btn.wide { width: 100%; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+form { display: grid; gap: 11px; }
+label { display: grid; gap: 4px; font-size: 13px; font-weight: 700; color: var(--muted); min-width: 0; }
+input, select, textarea { width: 100%; min-width: 0; min-height: 42px; padding: 8px 10px; background: #000; color: var(--text); border: 1px solid var(--line); font-size: 16px; font-weight: 500; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--neon); outline-offset: -1px; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 10px; }
+.qty { display: inline-flex; align-items: center; flex: none; }
+.qty button { width: 36px; height: 36px; background: var(--panel-2); border: 1px solid var(--line); color: var(--neon); font-size: 18px; cursor: pointer; }
+.qty span { min-width: 34px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.total { display: flex; justify-content: space-between; align-items: center; gap: 12px; font: 700 20px var(--display); color: var(--neon); border-top: 1px solid var(--line); padding-top: 10px; }
+.empty { color: var(--muted); padding-block: 8px; }
+.with-thumb { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.with-thumb > div { min-width: 0; }
+.thumb { flex: none; width: 52px; height: 52px; object-fit: cover; display: grid; place-items: center; background: var(--panel-2); border: 1px solid var(--line); color: var(--neon); font: 700 20px var(--display); }
+.shop { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.product { display: flex; flex-direction: column; min-width: 0; background: #000; border: 1px solid var(--line); }
+.product.has { border-color: var(--neon); }
+.product .pic { width: 100%; max-width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: grid; place-items: center; background: var(--panel-2); color: var(--neon-dim); font: 700 44px var(--display); }
+.product .info { flex: 1; display: flex; flex-direction: column; gap: 3px; padding: 10px; overflow-wrap: anywhere; }
+.product .info .qty { margin-top: auto; padding-top: 7px; justify-content: space-between; display: flex; }
+.photo-field { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.photo-field .thumb { width: 88px; height: 88px; font-size: 13px; font-family: var(--body); font-weight: 500; color: var(--muted); text-align: center; }
+.photo-pick { position: relative; overflow: hidden; }
+.photo-pick input { position: absolute; inset: 0; min-height: 0; opacity: 0; cursor: pointer; font-size: 100px; }
+.err { color: var(--alert); font-size: 14px; font-weight: 700; }
+.pix-key { padding: 10px; background: #000; border: 1px dashed var(--neon-dim); font-weight: 700; overflow-wrap: anywhere; user-select: all; }
+#qr { justify-self: center; background: #fff; padding: 10px; line-height: 0; }
+#qr img, #qr canvas { width: 190px; height: 190px; display: block; }
+.note { border-left: 3px solid var(--neon); padding-left: 10px; color: var(--muted); font-size: 13px; }
+#modal-wrap { position: fixed; inset: 0; z-index: 20; background: rgba(0, 0, 0, .78); overflow: auto; padding: 16px; display: flex; align-items: flex-start; justify-content: center; }
+#modal { width: min(520px, 100%); margin-block: auto; background: var(--panel); border: 1px solid var(--neon); padding: 16px; display: grid; gap: 12px; }
+#toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); transform: translateX(-50%); z-index: 30; background: var(--neon); color: #000; padding: 9px 15px; font-weight: 700; max-width: calc(100vw - 32px); text-align: center; }
+#login { min-height: 100vh; display: grid; place-items: center; padding-block: 24px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+#login .box { width: min(400px, 100%); display: grid; gap: 16px; }
+#login h1 { font-size: 38px; text-shadow: 0 0 22px rgba(57, 255, 20, .45); }
+.demo-logins { display: grid; gap: 8px; }
+@media (prefers-reduced-motion: no-preference) { #drawer { animation: slide .16s ease-out; } @keyframes slide { from { transform: translateX(-24px); opacity: .4; } } }
+</style>
+
+<div id="root"></div>
+<div id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+"use strict";
+/* Para colocar no ar com logins reais, cole aqui a configuração do Firebase. Com null, roda em modo demonstração. */
+const FIREBASE_CONFIG = null;
+const EMAIL_DOMAIN = "prazocerto.app";
+const OWNER_USER = "ptk";
+const SUPPLIER_USER = "vorcaro";
+const COLLECTIONS = ["settings", "products", "productCosts", "supplierPurchases", "supplierPayments", "resellers", "sales", "payments", "shipments", "supplierInfo"];
+
+/* ---------- Utilidades ---------- */
+const $ = (id) => document.getElementById(id);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+/* Todo valor é guardado em centavos */
+const money = (c) => ((c || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+function parseMoney(text) {
+  let s = String(text ?? "").trim().replace(/[^\d,.]/g, "");
+  if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
+  const v = Number(s);
+  return Number.isFinite(v) ? Math.round(v * 100) : NaN;
+}
+const moneyInput = (c) => ((c || 0) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: false });
+const dateText = (ms) => new Date(ms).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+const dateTime = (ms) => new Date(ms).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+const values = (col) => Object.values(state.data[col] || {});
+const byDateDesc = (a, b) => (b.at || 0) - (a.at || 0);
+let toastTimer;
+function toast(text) {
+  const t = $("toast");
+  t.textContent = text;
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 2800);
+}
+function friendlyError(e) {
+  const code = (e && (e.code || e.message)) || "";
+  const map = {
+    "auth/invalid-credential": "Usuário ou senha incorretos.",
+    "auth/wrong-password": "Usuário ou senha incorretos.",
+    "auth/user-not-found": "Usuário ou senha incorretos.",
+    "auth/email-already-in-use": "Esse usuário já existe. Escolha outro.",
+    "auth/weak-password": "A senha precisa ter pelo menos 6 caracteres.",
+    "auth/network-request-failed": "Sem internet. Confira a conexão e tente de novo.",
+    "permission-denied": "Sua conta não tem permissão para fazer isso."
+  };
+  return map[code] || (e && e.friendly) || "Não deu certo. Confira os dados e tente de novo.";
+}
+function userError(text) { const e = new Error(text); e.friendly = text; return e; }
+
+/* ---------- Pix copia e cola ---------- */
+function crc16(s) {
+  let crc = 0xffff;
+  for (let i = 0; i < s.length; i++) {
+    crc ^= s.charCodeAt(i) << 8;
+    for (let b = 0; b < 8; b++) crc = crc & 0x8000 ? ((crc << 1) ^ 0x1021) & 0xffff : (crc << 1) & 0xffff;
+  }
+  return crc.toString(16).toUpperCase().padStart(4, "0");
+}
+const asciiUpper = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9 ]/g, "").toUpperCase().trim();
+function pixCode({ key, name, city, cents }) {
+  const f = (id, v) => id + String(v.length).padStart(2, "0") + v;
+  const account = f("00", "br.gov.bcb.pix") + f("01", String(key).trim());
+  let p = f("00", "01") + f("26", account) + f("52", "0000") + f("53", "986");
+  if (cents > 0) p += f("54", (cents / 100).toFixed(2));
+  p += f("58", "BR") + f("59", asciiUpper(name).slice(0, 25) || "RECEBEDOR") + f("60", asciiUpper(city).slice(0, 15) || "BRASIL") + f("62", f("05", "***")) + "6304";
+  return p + crc16(p);
+}
+
+/* ---------- Modo demonstração: dados só neste aparelho ---------- */
+function demoSeed() {
+  const now = Date.now(), day = 86400000;
+  const mk = (id, name, price, resale, cost, stock, min) => [id, name, price, resale, cost, stock, min];
+  const list = [
+    mk("p1", "Exemplo: Perfume 100 ml", 8990, 6490, 4200, 18, 5),
+    mk("p2", "Exemplo: Creme corporal", 4590, 3290, 1900, 3, 5),
+    mk("p3", "Exemplo: Kit presente", 12990, 9490, 6100, 9, 3)
+  ];
+  const d = Object.fromEntries(COLLECTIONS.map((c) => [c, {}]));
+  list.forEach(([id, name, price, resalePrice, cost, stock, minStock]) => {
+    d.products[id] = { id, name, price, resalePrice, stock, minStock };
+    d.productCosts[id] = { id, cost };
+  });
+  d.settings.main = { id: "main", businessName: "Prazo Certo", supplierName: "Fornecedor exemplo", pixKey: "sua-chave-pix@exemplo.com", pixName: "Seu Nome", pixCity: "Sao Joao de Meriti", whatsapp: "" };
+  d.resellers.r1 = { id: "r1", name: "Ana (exemplo)", phone: "", username: "ana", active: true };
+  const item = (p, qty, price) => ({ productId: p, name: list.find((x) => x[0] === p)[1], qty, price });
+  d.supplierPurchases.c1 = { id: "c1", at: now - 12 * day, items: [{ productId: "p1", name: list[0][1], qty: 30, cost: 4200 }, { productId: "p2", name: list[1][1], qty: 15, cost: 1900 }, { productId: "p3", name: list[2][1], qty: 12, cost: 6100 }], total: 30 * 4200 + 15 * 1900 + 12 * 6100, note: "Compra de exemplo" };
+  d.supplierPayments.f1 = { id: "f1", at: now - 7 * day, amount: 50000, note: "Pagamento semanal" };
+  d.sales.s1 = { id: "s1", at: now - 6 * day, kind: "revenda", resellerId: "r1", items: [item("p1", 4, 6490), item("p2", 3, 3290)], total: 4 * 6490 + 3 * 3290, canceled: false, createdBy: "r1" };
+  d.sales.s2 = { id: "s2", at: now - 2 * day, kind: "revenda", resellerId: "r1", items: [item("p3", 2, 9490)], total: 2 * 9490, canceled: false, createdBy: "r1" };
+  d.sales.s3 = { id: "s3", at: now - 1 * day, kind: "direta", customer: "Cliente balcão", items: [item("p1", 2, 8990)], total: 2 * 8990, canceled: false, createdBy: "owner" };
+  d.payments.g1 = { id: "g1", at: now - 3 * day, confirmedAt: now - 3 * day, resellerId: "r1", amount: 15000, status: "confirmado", summary: "Pagamento parcial de exemplo" };
+  return { data: d, logins: { ana: { pass: "1234", role: "reseller", uid: "r1" } } };
+}
+function createDemoStore() {
+  const KEY = "prazo-certo-demo-v1";
+  let db = null, session = null, cb = () => {};
+  try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) { /* segue sem dados salvos */ }
+  if (!db || !db.data) db = demoSeed();
+  const addMuriel = () => {
+    delete db.logins.dono;
+    ["shipments", "supplierInfo"].forEach((c) => { if (!db.data[c]) db.data[c] = {}; });
+    db.logins.vorcaro = { hash: "40f475ba7443c1fa86b84aa95cd2305406824d37dd6c127240e35b34c51665f4", role: "supplier", uid: "supplier" };
+    if (db.data.settings.main && db.data.settings.main.supplierName === "Fornecedor exemplo") db.data.settings.main.supplierName = "Vorcaro";
+    db.logins.ptk = { hash: "7ace998e69be20f09e760cc3325fe07f7753630a2e99cdf0eb95a01c2ac4b39d", role: "owner", uid: "owner" };
+    if (db.logins.muriel) return;
+    db.logins.muriel = { hash: "ca614e97277b2d62aaf177ab4a5339fd3f7e69e4a194b422f7080720f87b3f24", role: "reseller", uid: "r-muriel" };
+    db.data.resellers["r-muriel"] = { id: "r-muriel", name: "Muriel", phone: "", username: "muriel", active: true };
+  };
+  addMuriel();
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { /* sem armazenamento */ } };
+  const emit = () => { save(); cb(session, db.data); };
+  return {
+    mode: "demo",
+    start(fn) { cb = fn; cb(null, db.data); },
+    async login(user, pass) {
+      const l = db.logins[String(user).trim().toLowerCase()];
+      let ok = !!l && l.pass === pass;
+      if (l && l.hash) {
+        const enc = new TextEncoder(), name = String(user).trim().toLowerCase();
+        const key = await crypto.subtle.importKey("raw", enc.encode(pass), "PBKDF2", false, ["deriveBits"]);
+        const bytes = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: enc.encode(`prazo-certo-${name}`), iterations: 300000 }, key, 256);
+        ok = [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, "0")).join("") === l.hash;
+      }
+      if (!ok) throw userError("Usuário ou senha incorretos.");
+      if (l.role === "reseller" && !db.data.resellers[l.uid]?.active) throw userError("Esse acesso foi desativado.");
+      session = { role: l.role, uid: l.uid };
+      cb(session, db.data);
+    },
+    async logout() { session = null; cb(null, db.data); },
+    async set(col, id, doc) { db.data[col][id] = { ...(db.data[col][id] || {}), ...doc, id }; emit(); },
+    async del(col, id) { delete db.data[col][id]; emit(); },
+    async sell(sale) {
+      for (const it of sale.items) if ((db.data.products[it.productId]?.stock ?? 0) < it.qty) throw userError(`Estoque insuficiente de ${it.name}.`);
+      sale.items.forEach((it) => { db.data.products[it.productId].stock -= it.qty; });
+      db.data.sales[sale.id] = sale;
+      emit();
+    },
+    async cancelSale(id) {
+      const s = db.data.sales[id];
+      s.items.forEach((it) => { if (db.data.products[it.productId]) db.data.products[it.productId].stock += it.qty; });
+      s.canceled = true;
+      emit();
+    },
+    async addPurchase(purchase) {
+      purchase.items.forEach((it) => {
+        const p = db.data.products[it.productId], c = db.data.productCosts[it.productId];
+        const stock = Math.max(p.stock, 0);
+        c.cost = Math.round((stock * (c.cost || 0) + it.qty * it.cost) / (stock + it.qty));
+        p.stock += it.qty;
+      });
+      db.data.supplierPurchases[purchase.id] = purchase;
+      emit();
+    },
+    async removePurchase(id) {
+      const pu = db.data.supplierPurchases[id];
+      pu.items.forEach((it) => { if (db.data.products[it.productId]) db.data.products[it.productId].stock = Math.max(0, db.data.products[it.productId].stock - it.qty); });
+      delete db.data.supplierPurchases[id];
+      emit();
+    },
+    async createReseller({ name, phone, username, password }) {
+      const u = username.trim().toLowerCase();
+      if (db.logins[u]) throw userError("Esse usuário já existe. Escolha outro.");
+      const id = uid();
+      db.logins[u] = { pass: password, role: "reseller", uid: id };
+      db.data.resellers[id] = { id, name, phone, username: u, active: true };
+      emit();
+    },
+    async reset() { db = demoSeed(); addMuriel(); session = null; save(); cb(null, db.data); }
+  };
+}
+
+/* ---------- Modo real: Firebase (login e dados online) ---------- */
+function loadScript(src) {
+  return new Promise((ok, bad) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = bad; document.head.appendChild(s); });
+}
+function createFirebaseStore(cfg) {
+  const emailOf = (u) => `${String(u).trim().toLowerCase()}@${EMAIL_DOMAIN}`;
+  const OWNER_EMAIL = emailOf(OWNER_USER);
+  let fs, auth, session = null, cb = () => {}, unsubs = [];
+  const data = Object.fromEntries(COLLECTIONS.map((c) => [c, {}]));
+  const clear = () => { unsubs.forEach((u) => u()); unsubs = []; COLLECTIONS.forEach((c) => { data[c] = {}; }); };
+  const watch = (col, query) => {
+    unsubs.push(query.onSnapshot((snap) => {
+      snap.docChanges().forEach((ch) => {
+        if (ch.type === "removed") delete data[col][ch.doc.id];
+        else data[col][ch.doc.id] = { ...ch.doc.data(), id: ch.doc.id };
+      });
+      cb(session, data);
+    }, () => toast("Sem acesso aos dados agora. Tente entrar de novo.")));
+  };
+  return {
+    mode: "real",
+    async start(fn) {
+      cb = fn;
+      const base = "https://www.gstatic.com/firebasejs/10.14.1/";
+      await loadScript(base + "firebase-app-compat.js");
+      await Promise.all([loadScript(base + "firebase-auth-compat.js"), loadScript(base + "firebase-firestore-compat.js")]);
+      firebase.initializeApp(cfg);
+      auth = firebase.auth();
+      fs = firebase.firestore();
+      auth.onAuthStateChanged(async (user) => {
+        clear();
+        if (!user) { session = null; cb(null, data); return; }
+        if (user.email === OWNER_EMAIL) {
+          session = { role: "owner", uid: user.uid };
+          COLLECTIONS.forEach((c) => watch(c, fs.collection(c)));
+        } else if (user.email === emailOf(SUPPLIER_USER)) {
+          session = { role: "supplier", uid: user.uid };
+          ["settings", "supplierPurchases", "supplierPayments", "shipments", "supplierInfo"].forEach((c) => watch(c, fs.collection(c)));
+        } else {
+          const me = await fs.collection("resellers").doc(user.uid).get().catch(() => null);
+          if (!me || !me.exists || !me.data().active) { await auth.signOut(); toast("Esse acesso foi desativado."); return; }
+          session = { role: "reseller", uid: user.uid };
+          data.resellers[user.uid] = { ...me.data(), id: user.uid };
+          watch("settings", fs.collection("settings"));
+          watch("products", fs.collection("products"));
+          watch("sales", fs.collection("sales").where("resellerId", "==", user.uid));
+          watch("payments", fs.collection("payments").where("resellerId", "==", user.uid));
+        }
+        cb(session, data);
+      });
+    },
+    async login(user, pass) { await auth.signInWithEmailAndPassword(emailOf(user), pass); },
+    async createOwner(pass) { await auth.createUserWithEmailAndPassword(OWNER_EMAIL, pass); },
+    async createSupplier(pass) {
+      const second = firebase.apps.find((a) => a.name === "criar-login") || firebase.initializeApp(cfg, "criar-login");
+      await second.auth().createUserWithEmailAndPassword(emailOf(SUPPLIER_USER), pass);
+      await second.auth().signOut();
+    },
+    async logout() { await auth.signOut(); },
+    async set(col, id, doc) { await fs.collection(col).doc(id).set(doc, { merge: true }); },
+    async del(col, id) { await fs.collection(col).doc(id).delete(); },
+    async sell(sale) {
+      await fs.runTransaction(async (tx) => {
+        const refs = sale.items.map((it) => fs.collection("products").doc(it.productId));
+        const docs = await Promise.all(refs.map((r) => tx.get(r)));
+        docs.forEach((d, i) => { if (!d.exists || d.data().stock < sale.items[i].qty) throw userError(`Estoque insuficiente de ${sale.items[i].name}.`); });
+        docs.forEach((d, i) => tx.update(refs[i], { stock: d.data().stock - sale.items[i].qty }));
+        tx.set(fs.collection("sales").doc(sale.id), sale);
+      });
+    },
+    async cancelSale(id) {
+      await fs.runTransaction(async (tx) => {
+        const saleRef = fs.collection("sales").doc(id), sale = (await tx.get(saleRef)).data();
+        const refs = sale.items.map((it) => fs.collection("products").doc(it.productId));
+        const docs = await Promise.all(refs.map((r) => tx.get(r)));
+        docs.forEach((d, i) => { if (d.exists) tx.update(refs[i], { stock: d.data().stock + sale.items[i].qty }); });
+        tx.update(saleRef, { canceled: true });
+      });
+    },
+    async addPurchase(purchase) {
+      await fs.runTransaction(async (tx) => {
+        const pRefs = purchase.items.map((it) => fs.collection("products").doc(it.productId));
+        const cRefs = purchase.items.map((it) => fs.collection("productCosts").doc(it.productId));
+        const ps = await Promise.all(pRefs.map((r) => tx.get(r)));
+        const cs = await Promise.all(cRefs.map((r) => tx.get(r)));
+        purchase.items.forEach((it, i) => {
+          const stock = Math.max(ps[i].data().stock, 0), cost = cs[i].exists ? cs[i].data().cost : 0;
+          tx.update(pRefs[i], { stock: ps[i].data().stock + it.qty });
+          tx.set(cRefs[i], { cost: Math.round((stock * cost + it.qty * it.cost) / (stock + it.qty)) }, { merge: true });
+        });
+        tx.set(fs.collection("supplierPurchases").doc(purchase.id), purchase);
+      });
+    },
+    async removePurchase(id) {
+      await fs.runTransaction(async (tx) => {
+        const ref = fs.collection("supplierPurchases").doc(id), pu = (await tx.get(ref)).data();
+        const refs = pu.items.map((it) => fs.collection("products").doc(it.productId));
+        const docs = await Promise.all(refs.map((r) => tx.get(r)));
+        docs.forEach((d, i) => { if (d.exists) tx.update(refs[i], { stock: Math.max(0, d.data().stock - pu.items[i].qty) }); });
+        tx.delete(ref);
+      });
+    },
+    async createReseller({ name, phone, username, password }) {
+      /* Uma segunda conexão cria o login sem tirar o dono da conta dele */
+      const second = firebase.apps.find((a) => a.name === "criar-login") || firebase.initializeApp(cfg, "criar-login");
+      const u = username.trim().toLowerCase();
+      const made = await second.auth().createUserWithEmailAndPassword(emailOf(u), password);
+      await fs.collection("resellers").doc(made.user.uid).set({ name, phone, username: u, active: true });
+      await second.auth().signOut();
+    }
+  };
+}
+
+/* ---------- Estado e cálculos ---------- */
+const store = FIREBASE_CONFIG ? createFirebaseStore(FIREBASE_CONFIG) : createDemoStore();
+const state = { session: null, data: Object.fromEntries(COLLECTIONS.map((c) => [c, {}])), view: "inicio", drawer: false, cart: {}, sellTo: "direta", customer: "", weekOffset: 0, resellerOpen: null, payAmount: null, pending: false };
+const settings = () => state.data.settings.main || {};
+const liveSales = () => values("sales").filter((s) => !s.canceled);
+const costOf = (productId) => state.data.productCosts[productId]?.cost || 0;
+
+function resellerBalance(id) {
+  const bought = liveSales().filter((s) => s.resellerId === id).reduce((a, s) => a + s.total, 0);
+  const paid = values("payments").filter((p) => p.resellerId === id && p.status === "confirmado").reduce((a, p) => a + p.amount, 0);
+  return bought - paid;
+}
+const pendingPayments = (id) => values("payments").filter((p) => p.status === "pendente" && (!id || p.resellerId === id));
+/* O que foi pago abate as compras mais antigas primeiro */
+function openSales(id) {
+  let paid = values("payments").filter((p) => p.resellerId === id && p.status === "confirmado").reduce((a, p) => a + p.amount, 0);
+  const open = [];
+  liveSales().filter((s) => s.resellerId === id).sort((a, b) => a.at - b.at).forEach((s) => {
+    const used = Math.min(paid, s.total);
+    paid -= used;
+    if (s.total - used > 0) open.push({ sale: s, remaining: s.total - used });
+  });
+  return open;
+}
+const supplierDebt = () => values("supplierPurchases").reduce((a, p) => a + p.total, 0) - values("supplierPayments").reduce((a, p) => a + p.amount, 0);
+const receivableTotal = () => values("resellers").reduce((a, r) => a + Math.max(resellerBalance(r.id), 0), 0);
+function weekRange(offset) {
+  const d = new Date(); d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + offset * 7);
+  const end = new Date(d); end.setDate(d.getDate() + 7);
+  return [d.getTime(), end.getTime()];
+}
+function weekReport(offset) {
+  const [from, to] = weekRange(offset), inW = (t) => t >= from && t < to;
+  const sales = liveSales().filter((s) => inW(s.at));
+  const soldDirect = sales.filter((s) => s.kind === "direta").reduce((a, s) => a + s.total, 0);
+  const soldReseller = sales.filter((s) => s.kind === "revenda").reduce((a, s) => a + s.total, 0);
+  const receivedResellers = values("payments").filter((p) => p.status === "confirmado" && inW(p.confirmedAt || p.at)).reduce((a, p) => a + p.amount, 0);
+  const received = soldDirect + receivedResellers;
+  const costSold = sales.reduce((a, s) => a + s.items.reduce((b, it) => b + it.qty * costOf(it.productId), 0), 0);
+  const paidSupplier = values("supplierPayments").filter((p) => inW(p.at)).reduce((a, p) => a + p.amount, 0);
+  const debt = supplierDebt();
+  const suggest = Math.max(0, Math.min(costSold - paidSupplier, received - paidSupplier, debt));
+  return { from, to, sales, soldDirect, soldReseller, receivedResellers, received, costSold, paidSupplier, debt, suggest, profit: soldDirect + soldReseller - costSold };
+}
+
+/* ---------- Tela ---------- */
+const OWNER_NAV = [["inicio", "Início"], ["vender", "Vender"], ["revendedores", "Revendedores"], ["estoque", "Estoque"], ["fornecedor", "Fornecedor"], ["semana", "Semana"], ["config", "Configurações"]];
+const RESELLER_NAV = [["comprar", "Comprar"], ["pagar", "Minha conta"], ["historico", "Histórico"]];
+const SUPPLIER_NAV = [["forn", "Minha conta"]];
+const nav = () => ({ owner: OWNER_NAV, supplier: SUPPLIER_NAV }[state.session?.role] || RESELLER_NAV);
+const pendingShipments = () => values("shipments").filter((s) => s.status === "pendente");
+const purchaseText = (m) => (m.items && m.items.length ? m.items.map((i) => `${i.qty}x ${i.name}`).join(", ") : (m.note || "Mercadoria enviada"));
+function shipmentsHtml() {
+  const list = pendingShipments().sort(byDateDesc);
+  if (!list.length) return "";
+  return `<section class="card"><h2>Envios do fornecedor para conferir</h2><p class="muted">Só entram na dívida depois que você conferir.</p><div class="list">${list.map((s) => `<div class="item"><div><b>${esc(s.description)}</b><br><span class="muted">${dateTime(s.at)}</span></div><div class="right"><div class="money">${money(s.total)}</div><button class="btn small" type="button" data-act="ship-check" data-id="${esc(s.id)}">Conferir</button></div></div>`).join("")}</div></section>`;
+}
+function supplierAccountView() {
+  const purchases = values("supplierPurchases"), pays = values("supplierPayments");
+  const sent = purchases.reduce((a, p) => a + p.total, 0), paid = pays.reduce((a, p) => a + p.amount, 0);
+  const open = values("shipments").filter((s) => s.status !== "confirmado");
+  const moves = [...purchases.map((x) => ({ ...x, t: "c" })), ...pays.map((x) => ({ ...x, t: "p" })), ...open.map((x) => ({ ...x, t: "e" }))].sort(byDateDesc);
+  const info = state.data.supplierInfo.main || {};
+  const waiting = pendingShipments().reduce((a, s) => a + s.total, 0);
+  return `<h1>Minha conta</h1>
+  <div class="stats"><div class="stat"><div class="muted">Mercadoria enviada</div><div class="v">${money(sent)}</div></div><div class="stat"><div class="muted">Pago até agora</div><div class="v">${money(paid)}</div></div><div class="stat hot"><div class="muted">Falta receber</div><div class="v">${money(sent - paid)}</div></div>${waiting ? `<div class="stat warn"><div class="muted">Aguardando conferência</div><div class="v">${money(waiting)}</div></div>` : ""}</div>
+  <form class="card" data-form="shipment"><h2>Marcar mercadoria enviada</h2>
+    <label>O que você mandou<input name="description" placeholder="Exemplo: 20 perfumes" required></label>
+    <label>Valor total (R$)<input name="total" inputmode="decimal" required></label>
+    <button class="btn wide" type="submit">Enviar para conferência</button></form>
+  <section class="card"><h2>Movimentos</h2>${moves.length ? `<div class="list">${moves.map((m) => m.t === "c"
+    ? `<div class="item"><div><b>Mercadoria</b> <span class="tag">Conferida</span><br><span class="muted">${dateText(m.at)} · ${esc(purchaseText(m))}</span></div><div class="money">+ ${money(m.total)}</div></div>`
+    : m.t === "p" ? `<div class="item"><div><b>Pagamento recebido</b><br><span class="muted">${dateText(m.at)}${m.note ? ` · ${esc(m.note)}` : ""}</span></div><div class="money">− ${money(m.amount)}</div></div>`
+    : `<div class="item"><div><b>Envio</b> <span class="tag ${m.status === "pendente" ? "wait" : "off"}">${m.status === "pendente" ? "Aguardando" : "Recusado"}</span><br><span class="muted">${dateText(m.at)} · ${esc(m.description)}</span></div><div class="money">${money(m.total)}</div></div>`).join("")}</div>` : `<p class="empty">Seus envios e pagamentos vão aparecer aqui.</p>`}</section>
+  <form class="card" data-form="supplier-info"><h2>Minha chave Pix</h2><p class="muted">Usada para gerar o QR Code dos pagamentos.</p>
+    <label>Chave Pix<input name="pixKey" value="${esc(info.pixKey)}" required></label>
+    <div class="two"><label>Nome do titular<input name="pixName" value="${esc(info.pixName)}"></label><label>Cidade<input name="pixCity" value="${esc(info.pixCity)}"></label></div>
+    <button class="btn ghost wide" type="submit">Salvar chave Pix</button></form>`;
+}
+function supplierPayHtml(amount) {
+  const i = state.data.supplierInfo.main || {}, name = settings().supplierName || "fornecedor";
+  return `<h2>Pagar ${esc(name)}</h2><form data-form="supplier-pay">
+    <label>Valor (R$)<input id="sup-amount" name="amount" inputmode="decimal" data-input="sup-amount" value="${amount ? moneyInput(amount) : ""}" required></label>
+    ${i.pixKey ? `<div><div class="muted">Chave Pix de ${esc(i.pixName || name)}</div><div class="pix-key">${esc(i.pixKey)}</div></div><div id="qr" aria-label="QR Code do Pix"></div><div class="row"><button class="btn ghost small" type="button" data-act="copy-sup" data-text="key">Copiar chave</button><button class="btn ghost small" type="button" data-act="copy-sup" data-text="code">Copiar Pix copia e cola</button></div>` : `<p class="note">O fornecedor ainda não cadastrou a chave Pix. Você pode pagar por fora e registrar aqui, ou colocar a chave em Configurações.</p>`}
+    <label>Observação (opcional)<input name="note"></label>
+    <div class="err" id="form-err" hidden></div>
+    <div class="row"><button class="btn" type="submit">Já paguei: abater da dívida</button><button class="btn ghost" type="button" data-act="close">Voltar</button></div></form>`;
+}
+function supPixCode() {
+  const i = state.data.supplierInfo.main || {}, v = parseMoney($("sup-amount")?.value);
+  return pixCode({ key: i.pixKey, name: i.pixName || settings().supplierName, city: i.pixCity, cents: Number.isNaN(v) ? 0 : v });
+}
+function renderSupQr() {
+  const qr = $("qr"), i = state.data.supplierInfo.main || {};
+  if (!qr || !i.pixKey) return;
+  qr.innerHTML = "";
+  const v = parseMoney($("sup-amount").value);
+  if (window.QRCode && v > 0) { qr.hidden = false; new QRCode(qr, { text: supPixCode(), width: 190, height: 190, correctLevel: QRCode.CorrectLevel.M }); } else qr.hidden = true;
+}
+function currentMe() { return state.data.resellers[state.session?.uid]; }
+
+function render() {
+  const a = document.activeElement;
+  if (a && $("main-view") && $("main-view").contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) { state.pending = true; return; }
+  state.pending = false;
+  const root = $("root");
+  if (!state.session) { if (!$("login")) root.innerHTML = loginHtml(); return; }
+  const s = settings(), isOwner = state.session.role === "owner", pend = isOwner ? pendingPayments().length : 0, shipPend = isOwner ? pendingShipments().length : 0;
+  const views = { inicio: homeView, vender: sellView, revendedores: resellersView, estoque: stockView, fornecedor: supplierView, semana: weekView, config: configView, comprar: buyView, pagar: payView, historico: historyView, forn: supplierAccountView };
+  if (!nav().some(([k]) => k === state.view)) state.view = nav()[0][0];
+  const scroll = window.scrollY;
+  root.innerHTML = `
+    ${store.mode === "demo" ? `<div id="demo-bar">Modo demonstração: os dados são de exemplo e ficam só neste aparelho</div>` : ""}
+    <header>
+      <button class="icon-btn" data-act="drawer" aria-label="Abrir menu">☰${pend + shipPend ? `<span class="badge">${pend + shipPend}</span>` : ""}</button>
+      <div id="brand">${esc(s.businessName || "Prazo Certo")}</div>
+      <div id="who">${isOwner ? "Dono" : state.session.role === "supplier" ? esc(s.supplierName || "Fornecedor") : esc(currentMe()?.name || "Revendedor")}</div>
+    </header>
+    ${state.drawer ? `<div id="drawer-shade" data-act="drawer-close"></div><nav id="drawer" aria-label="Menu">
+      ${nav().map(([k, label]) => `<button type="button" class="${state.view === k ? "on" : ""}" data-act="go" data-v="${k}">${label}${k === "revendedores" && pend ? `<span class="badge">${pend}</span>` : ""}${k === "fornecedor" && shipPend ? `<span class="badge">${shipPend}</span>` : ""}</button>`).join("")}
+      ${store.mode === "demo" && state.session.role === "owner" ? `<button type="button" class="out" data-act="demo-reset">Restaurar dados de exemplo</button>` : ""}
+      <button type="button" class="${store.mode === "demo" && state.session.role === "owner" ? "" : "out"}" data-act="logout">Sair</button>
+    </nav>` : ""}
+    <main id="main-view">${views[state.view]()}</main>`;
+  window.scrollTo(0, scroll);
+  if (state.view === "pagar") afterPayRender();
+}
+document.addEventListener("focusout", () => setTimeout(() => { if (state.pending) render(); }, 0));
+
+function loginHtml() {
+  const demo = store.mode === "demo";
+  return `<div id="login"><div class="box">
+    <div><h1>Prazo Certo</h1><p class="muted">Estoque, vendas a prazo, revendedores e fornecedor no mesmo lugar.</p></div>
+    <form class="card" data-form="login">
+      <label>Usuário<input id="login-user" name="user" autocomplete="username" autocapitalize="none" required></label>
+      <label>Senha<input id="login-pass" name="pass" type="password" autocomplete="current-password" required></label>
+      <div class="err" id="login-err" hidden></div>
+      <button class="btn wide" type="submit">Entrar</button>
+    </form>
+    ${demo ? `<div class="card demo-logins"><h3>Testar a demonstração</h3>
+      <button class="btn ghost wide" type="button" data-act="demo-login" data-u="ana">Entrar como revendedora Ana</button>
+      <p class="muted">Ana é uma conta de exemplo. Os outros acessos entram pelo usuário e senha acima.</p></div>`
+    : `<button class="btn ghost" type="button" data-act="first-owner">Primeiro acesso: criar a senha do dono</button>`}
+  </div></div>`;
+}
+
+/* --- Dono --- */
+function homeView() {
+  const low = values("products").filter((p) => p.stock <= (p.minStock || 0));
+  const pend = pendingPayments();
+  const w = weekReport(0);
+  const rows = values("resellers").filter((r) => resellerBalance(r.id) > 0).sort((a, b) => resellerBalance(b.id) - resellerBalance(a.id));
+  return `<h1>Início</h1>
+  <div class="stats">
+    <div class="stat hot"><div class="muted">Revendedores me devem</div><div class="v">${money(receivableTotal())}</div></div>
+    <div class="stat hot"><div class="muted">Devo ao fornecedor</div><div class="v">${money(supplierDebt())}</div></div>
+    <div class="stat"><div class="muted">Recebido nesta semana</div><div class="v">${money(w.received)}</div></div>
+    <div class="stat"><div class="muted">Sugestão para pagar nesta semana</div><div class="v">${money(w.suggest)}</div></div>
+  </div>
+  ${shipmentsHtml()}${pend.length ? `<section class="card"><h2>Pagamentos para confirmar</h2><p class="muted">Confira o comprovante no WhatsApp antes de confirmar.</p><div class="list">${pend.sort(byDateDesc).map(paymentRow).join("")}</div></section>` : ""}
+  ${low.length ? `<section class="card"><h2>Estoque baixo</h2><div class="list">${low.map((p) => `<div class="item"><div>${esc(p.name)}</div><span class="tag low">${p.stock} un.</span></div>`).join("")}</div></section>` : ""}
+  <section class="card"><div class="head"><h2>Quem está devendo</h2><button class="btn small ghost" type="button" data-act="go" data-v="revendedores">Ver todos</button></div>
+    ${rows.length ? `<div class="list">${rows.map((r) => `<div class="item"><div>${esc(r.name)}</div><div class="money">${money(resellerBalance(r.id))}</div></div>`).join("")}</div>` : `<p class="empty">Nenhum revendedor com saldo em aberto.</p>`}
+  </section>
+  <div class="row"><button class="btn" type="button" data-act="go" data-v="vender">Nova venda</button><button class="btn ghost" type="button" data-act="purchase">Entrada do fornecedor</button></div>`;
+}
+function paymentRow(p) {
+  const r = state.data.resellers[p.resellerId];
+  return `<div class="item"><div><b>${esc(r?.name || "Revendedor")}</b> <span class="money">${money(p.amount)}</span><br><span class="muted">${dateTime(p.at)}${p.summary ? ` · ${esc(p.summary)}` : ""}</span></div>
+    <div class="right row"><button class="btn small" type="button" data-act="pay-confirm" data-id="${esc(p.id)}">Confirmar</button><button class="btn small ghost" type="button" data-act="pay-reject" data-id="${esc(p.id)}">Recusar</button></div></div>`;
+}
+const photoOf = (p) => (typeof p?.photo === "string" && p.photo.startsWith("data:image/") ? p.photo : "");
+const initial = (p) => esc((p?.name || "?").replace(/^Exemplo:\s*/, "").charAt(0).toUpperCase());
+const thumb = (p) => (photoOf(p) ? `<img class="thumb" src="${esc(photoOf(p))}" alt="">` : `<div class="thumb" aria-hidden="true">${initial(p)}</div>`);
+let draftPhoto = "";
+function photoFieldHtml() {
+  return draftPhoto ? `<img class="thumb" src="${esc(draftPhoto)}" alt="Foto do produto">` : `<div class="thumb">Sem foto</div>`;
+}
+function shrinkPhoto(file) {
+  return new Promise((ok, bad) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, 500 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.max(1, Math.round(img.width * scale));
+      c.height = Math.max(1, Math.round(img.height * scale));
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      ok(c.toDataURL("image/jpeg", 0.72));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); bad(userError("Não consegui abrir essa imagem. Tente uma foto em JPG ou PNG.")); };
+    img.src = url;
+  });
+}
+function cartHtml(priceOf, shop) {
+  const products = values("products").sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  if (!products.length) return `<p class="empty">Nenhum produto disponível ainda.</p>`;
+  if (shop) {
+    return `<div class="shop">${products.map((p) => {
+      const q = state.cart[p.id] || 0, out = p.stock <= 0;
+      return `<article class="product ${q ? "has" : ""}">${photoOf(p) ? `<img class="pic" src="${esc(photoOf(p))}" alt="${esc(p.name)}">` : `<div class="pic" aria-hidden="true">${initial(p)}</div>`}
+        <div class="info"><div>${esc(p.name)}</div><div class="money">${money(priceOf(p))}</div><div class="muted">${out ? "Esgotado" : `${p.stock} disponíveis`}</div>
+        <div class="qty"><button type="button" data-act="cart" data-id="${esc(p.id)}" data-d="-1" aria-label="Tirar uma unidade de ${esc(p.name)}">−</button><span>${q}</span><button type="button" data-act="cart" data-id="${esc(p.id)}" data-d="1" ${out ? "disabled" : ""} aria-label="Adicionar uma unidade de ${esc(p.name)}">+</button></div></div></article>`;
+    }).join("")}</div>`;
+  }
+  return `<div class="list">${products.map((p) => {
+    const q = state.cart[p.id] || 0;
+    return `<div class="item"><div class="with-thumb">${thumb(p)}<div>${esc(p.name)}<br><span class="money">${money(priceOf(p))}</span> <span class="muted">· ${p.stock} no estoque</span></div></div>
+      <div class="qty"><button type="button" data-act="cart" data-id="${esc(p.id)}" data-d="-1" aria-label="Tirar uma unidade de ${esc(p.name)}">−</button><span>${q}</span><button type="button" data-act="cart" data-id="${esc(p.id)}" data-d="1" aria-label="Adicionar uma unidade de ${esc(p.name)}">+</button></div></div>`;
+  }).join("")}</div>`;
+}
+const cartItems = (priceOf) => Object.entries(state.cart).filter(([, q]) => q > 0).map(([id, qty]) => {
+  const p = state.data.products[id];
+  return p ? { productId: id, name: p.name, qty, price: priceOf(p) } : null;
+}).filter(Boolean);
+const cartTotal = (items) => items.reduce((a, it) => a + it.qty * it.price, 0);
+function sellView() {
+  const direct = state.sellTo === "direta";
+  const priceOf = (p) => (direct ? p.price : p.resalePrice);
+  const items = cartItems(priceOf);
+  const recent = values("sales").sort(byDateDesc).slice(0, 8);
+  return `<h1>Vender</h1>
+  <section class="card">
+    <label>Para quem<select id="sell-to" data-change="sell-to">
+      <option value="direta" ${direct ? "selected" : ""}>Cliente final (à vista)</option>
+      ${values("resellers").filter((r) => r.active).map((r) => `<option value="${esc(r.id)}" ${state.sellTo === r.id ? "selected" : ""}>Revendedor: ${esc(r.name)} (a prazo)</option>`).join("")}
+    </select></label>
+    ${direct ? `<label>Nome do cliente (opcional)<input id="sell-customer" data-change="customer" value="${esc(state.customer)}"></label>` : ""}
+    ${cartHtml(priceOf)}
+    <div class="total"><span>Total</span><span>${money(cartTotal(items))}</span></div>
+    <button class="btn wide" type="button" data-act="sell" ${items.length ? "" : "disabled"}>Registrar venda</button>
+  </section>
+  <section class="card"><h2>Últimas vendas</h2>${recent.length ? `<div class="list">${recent.map((s) => saleRow(s, true)).join("")}</div>` : `<p class="empty">Nenhuma venda ainda.</p>`}</section>`;
+}
+function saleRow(s, canCancel) {
+  const who = s.kind === "direta" ? (s.customer || "Cliente final") : (state.data.resellers[s.resellerId]?.name || "Revendedor");
+  return `<div class="item"><div><b>${esc(who)}</b> ${s.canceled ? `<span class="tag off">Cancelada</span>` : `<span class="tag">${s.kind === "direta" ? "À vista" : "A prazo"}</span>`}<br>
+    <span class="muted">${dateTime(s.at)} · ${esc(s.items.map((i) => `${i.qty}x ${i.name}`).join(", "))}</span></div>
+    <div class="right"><div class="money">${money(s.total)}</div>${canCancel && !s.canceled ? `<button class="btn small ghost" type="button" data-act="sale-cancel" data-id="${esc(s.id)}">Cancelar</button>` : ""}</div></div>`;
+}
+function resellersView() {
+  const open = state.resellerOpen && state.data.resellers[state.resellerOpen];
+  if (open) {
+    const sales = values("sales").filter((s) => s.resellerId === open.id).sort(byDateDesc);
+    const pays = values("payments").filter((p) => p.resellerId === open.id && p.status !== "pendente").sort(byDateDesc);
+    const pend = pendingPayments(open.id);
+    return `<div class="head"><h1>${esc(open.name)}</h1><button class="btn small ghost" type="button" data-act="reseller-close">Voltar</button></div>
+    <div class="stats"><div class="stat hot"><div class="muted">Saldo devedor</div><div class="v">${money(resellerBalance(open.id))}</div></div><div class="stat"><div class="muted">Usuário de acesso</div><div class="v" style="font-size:18px">${esc(open.username || "-")}</div></div></div>
+    <div class="row"><button class="btn" type="button" data-act="manual-pay" data-id="${esc(open.id)}">Registrar recebimento</button><button class="btn ghost" type="button" data-act="reseller-toggle" data-id="${esc(open.id)}">${open.active ? "Desativar acesso" : "Reativar acesso"}</button></div>
+    ${pend.length ? `<section class="card"><h2>Para confirmar</h2><div class="list">${pend.map(paymentRow).join("")}</div></section>` : ""}
+    <section class="card"><h2>Compras</h2>${sales.length ? `<div class="list">${sales.map((s) => saleRow(s, true)).join("")}</div>` : `<p class="empty">Nenhuma compra ainda.</p>`}</section>
+    <section class="card"><h2>Pagamentos</h2>${pays.length ? `<div class="list">${pays.map((p) => `<div class="item"><div>${dateTime(p.confirmedAt || p.at)}<br><span class="muted">${esc(p.summary || "")}</span></div><div class="right"><div class="money">${money(p.amount)}</div><span class="tag ${p.status === "recusado" ? "off" : ""}">${p.status === "recusado" ? "Recusado" : "Confirmado"}</span></div></div>`).join("")}</div>` : `<p class="empty">Nenhum pagamento ainda.</p>`}</section>`;
+  }
+  const list = values("resellers").sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  const pend = pendingPayments();
+  return `<div class="head"><h1>Revendedores</h1><button class="btn" type="button" data-act="reseller-new">Novo revendedor</button></div>
+  ${pend.length ? `<section class="card"><h2>Pagamentos para confirmar</h2><div class="list">${pend.sort(byDateDesc).map(paymentRow).join("")}</div></section>` : ""}
+  <section class="card">${list.length ? `<div class="list">${list.map((r) => `<div class="item"><div><b>${esc(r.name)}</b> ${r.active ? "" : `<span class="tag off">Sem acesso</span>`}<br><span class="muted">Usuário: ${esc(r.username || "-")}</span></div><div class="right"><div class="money">${money(resellerBalance(r.id))}</div><button class="btn small ghost" type="button" data-act="reseller-open" data-id="${esc(r.id)}">Abrir</button></div></div>`).join("")}</div>` : `<p class="empty">Cadastre o primeiro revendedor para ele receber um login e uma senha.</p>`}</section>`;
+}
+function stockView() {
+  const list = values("products").sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  const worth = list.reduce((a, p) => a + Math.max(p.stock, 0) * costOf(p.id), 0);
+  return `<div class="head"><h1>Estoque</h1><div class="row"><button class="btn ghost" type="button" data-act="purchase">Entrada do fornecedor</button><button class="btn" type="button" data-act="product-new">Novo produto</button></div></div>
+  <div class="stats"><div class="stat"><div class="muted">Unidades em estoque</div><div class="v">${list.reduce((a, p) => a + p.stock, 0)}</div></div><div class="stat"><div class="muted">Valor pelo custo</div><div class="v">${money(worth)}</div></div></div>
+  <section class="card">${list.length ? `<div class="list">${list.map((p) => `<div class="item"><div class="with-thumb">${thumb(p)}<div><b>${esc(p.name)}</b> ${p.stock <= (p.minStock || 0) ? `<span class="tag low">Baixo</span>` : ""}<br><span class="muted">Custo ${money(costOf(p.id))} · Venda ${money(p.price)} · Revenda ${money(p.resalePrice)}</span></div></div><div class="right"><div class="money">${p.stock} un.</div><button class="btn small ghost" type="button" data-act="product-edit" data-id="${esc(p.id)}">Editar</button></div></div>`).join("")}</div>` : `<p class="empty">Cadastre seus produtos e depois lance a entrada do fornecedor.</p>`}</section>`;
+}
+function supplierView() {
+  const s = settings();
+  const moves = [...values("supplierPurchases").map((x) => ({ ...x, t: "compra" })), ...values("supplierPayments").map((x) => ({ ...x, t: "pagamento" }))].sort(byDateDesc);
+  return `<div class="head"><h1>${esc(s.supplierName || "Fornecedor")}</h1><div class="row"><button class="btn ghost" type="button" data-act="purchase">Nova entrada</button><button class="btn" type="button" data-act="supplier-pay">Registrar pagamento</button></div></div>
+  <div class="stats"><div class="stat hot"><div class="muted">Falta pagar</div><div class="v">${money(supplierDebt())}</div></div><div class="stat"><div class="muted">Sugestão desta semana</div><div class="v">${money(weekReport(0).suggest)}</div></div></div>
+  ${shipmentsHtml()}<section class="card"><h2>Movimentos</h2>${moves.length ? `<div class="list">${moves.map((m) => m.t === "compra"
+    ? `<div class="item"><div><b>Entrada de mercadoria</b><br><span class="muted">${dateText(m.at)} · ${esc(purchaseText(m))}</span></div><div class="right"><div class="money">+ ${money(m.total)}</div><button class="btn small ghost" type="button" data-act="purchase-del" data-id="${esc(m.id)}">Apagar</button></div></div>`
+    : `<div class="item"><div><b>Pagamento</b><br><span class="muted">${dateText(m.at)}${m.note ? ` · ${esc(m.note)}` : ""}</span></div><div class="right"><div class="money">− ${money(m.amount)}</div><button class="btn small ghost" type="button" data-act="supplier-pay-del" data-id="${esc(m.id)}">Apagar</button></div></div>`).join("")}</div>` : `<p class="empty">Nenhum movimento ainda.</p>`}</section>`;
+}
+function weekView() {
+  const w = weekReport(state.weekOffset);
+  const end = new Date(w.to - 1);
+  return `<h1>Semana</h1>
+  <div class="head"><button class="btn small ghost" type="button" data-act="week" data-d="-1">Semana anterior</button><b class="num">${dateText(w.from)} a ${dateText(end.getTime())}</b><button class="btn small ghost" type="button" data-act="week" data-d="1" ${state.weekOffset >= 0 ? "disabled" : ""}>Próxima</button></div>
+  <div class="stats">
+    <div class="stat hot"><div class="muted">Recebido</div><div class="v">${money(w.received)}</div></div>
+    <div class="stat"><div class="muted">Vendido à vista</div><div class="v">${money(w.soldDirect)}</div></div>
+    <div class="stat"><div class="muted">Vendido a prazo</div><div class="v">${money(w.soldReseller)}</div></div>
+    <div class="stat"><div class="muted">Lucro estimado das vendas</div><div class="v">${money(w.profit)}</div></div>
+  </div>
+  <section class="card"><h2>Pagamento do fornecedor</h2>
+    <div class="list">
+      <div class="item"><div>Recebido dos revendedores</div><div class="money">${money(w.receivedResellers)}</div></div>
+      <div class="item"><div>Custo do que foi vendido</div><div class="money">${money(w.costSold)}</div></div>
+      <div class="item"><div>Já pago nesta semana</div><div class="money">${money(w.paidSupplier)}</div></div>
+      <div class="item"><div>Dívida total com o fornecedor</div><div class="money">${money(w.debt)}</div></div>
+    </div>
+    <div class="total"><span>Sugestão para pagar</span><span>${money(w.suggest)}</span></div>
+    <p class="note">A sugestão repõe o custo do que vendeu na semana, sem passar do que entrou no caixa nem da dívida. Você pode pagar outro valor.</p>
+    ${state.weekOffset === 0 ? `<button class="btn wide" type="button" data-act="supplier-pay" data-amount="${w.suggest}">Registrar pagamento</button>` : ""}
+  </section>
+  <section class="card"><h2>Vendas da semana</h2>${w.sales.length ? `<div class="list">${w.sales.sort(byDateDesc).map((s) => saleRow(s, false)).join("")}</div>` : `<p class="empty">Nenhuma venda nesta semana.</p>`}</section>`;
+}
+function configView() {
+  const s = settings();
+  return `<h1>Configurações</h1>
+  <form class="card" data-form="settings">
+    <label>Nome que aparece no app<input name="businessName" value="${esc(s.businessName)}" required></label>
+    <label>Nome do fornecedor<input name="supplierName" value="${esc(s.supplierName)}"></label>
+    <h2>Pix e WhatsApp para os revendedores</h2>
+    <label>Chave Pix<input name="pixKey" value="${esc(s.pixKey)}" placeholder="Celular com +55, e-mail, CPF ou chave aleatória"></label>
+    <div class="two"><label>Nome do titular<input name="pixName" value="${esc(s.pixName)}"></label><label>Cidade<input name="pixCity" value="${esc(s.pixCity)}"></label></div>
+    <label>WhatsApp que recebe os comprovantes<input name="whatsapp" inputmode="tel" value="${esc(s.whatsapp)}" placeholder="21999999999"></label>
+    <h2>Pix do fornecedor</h2>
+    <p class="muted">Gera o QR Code na hora de pagar. O fornecedor também pode preencher no login dele.</p>
+    <label>Chave Pix<input name="supPixKey" value="${esc(state.data.supplierInfo.main?.pixKey)}"></label>
+    <div class="two"><label>Nome do titular<input name="supPixName" value="${esc(state.data.supplierInfo.main?.pixName)}"></label><label>Cidade<input name="supPixCity" value="${esc(state.data.supplierInfo.main?.pixCity)}"></label></div>
+    <button class="btn wide" type="submit">Salvar</button>
+  </form>
+  ${store.mode === "real" ? `<section class="card"><h2>Acesso do fornecedor</h2><p class="muted">Usuário: ${SUPPLIER_USER}</p><button class="btn ghost wide" type="button" data-act="supplier-login">Criar acesso do fornecedor</button></section>` : ""}`;
+}
+
+/* --- Revendedor --- */
+function buyView() {
+  const priceOf = (p) => p.resalePrice;
+  const items = cartItems(priceOf);
+  const bal = resellerBalance(state.session.uid);
+  return `<h1>Comprar</h1>
+  <div class="stat hot"><div class="muted">Meu saldo a pagar</div><div class="v">${money(bal)}</div></div>
+  <section class="card">
+    <h2>Loja: marque o que você pegou</h2>
+    ${cartHtml(priceOf, true)}
+    <div class="total"><span>Total</span><span>${money(cartTotal(items))}</span></div>
+    <button class="btn wide" type="button" data-act="reseller-buy" ${items.length ? "" : "disabled"}>Confirmar compra a prazo</button>
+  </section>`;
+}
+function payView() {
+  const me = state.session.uid, bal = resellerBalance(me), s = settings();
+  const pend = pendingPayments(me);
+  const pendTotal = pend.reduce((a, p) => a + p.amount, 0);
+  const open = openSales(me);
+  const toPay = Math.max(bal - pendTotal, 0);
+  if (state.payAmount == null || state.payAmount > toPay) state.payAmount = toPay;
+  return `<h1>Minha conta</h1>
+  <div class="stats"><div class="stat hot"><div class="muted">Saldo a pagar</div><div class="v">${money(bal)}</div></div>
+  ${pend.length ? `<div class="stat warn"><div class="muted">Aguardando confirmação</div><div class="v">${money(pendTotal)}</div></div>` : ""}</div>
+  ${open.length ? `<section class="card"><h2>O que está em aberto</h2><div class="list">${open.map((o) => `<div class="item"><div>${dateText(o.sale.at)}<br><span class="muted">${esc(o.sale.items.map((i) => `${i.qty}x ${i.name}`).join(", "))}</span></div><div class="money">${money(o.remaining)}</div></div>`).join("")}</div></section>` : `<section class="card"><p class="empty">Você não tem nada em aberto.</p></section>`}
+  ${toPay > 0 ? `<section class="card"><h2>Pagar por Pix</h2>
+    ${s.pixKey ? `<label>Valor do pagamento<input id="pay-amount" inputmode="decimal" value="${moneyInput(state.payAmount)}" data-input="pay-amount"></label>
+    <div><div class="muted">Chave Pix de ${esc(s.pixName || "recebedor")}</div><div class="pix-key">${esc(s.pixKey)}</div></div>
+    <button class="btn ghost wide" type="button" data-act="copy" data-text="key">Copiar chave Pix</button>
+    <div id="qr" aria-label="QR Code do Pix"></div>
+    <button class="btn ghost wide" type="button" data-act="copy" data-text="code">Copiar Pix copia e cola</button>
+    <p class="note">Depois de pagar, toque no botão abaixo. A mensagem já vai com o que você está pagando. No WhatsApp, anexe o comprovante.</p>
+    <a id="wa-link" class="btn wide" target="_blank" rel="noopener" href="#" data-act="wa-send">Já paguei: enviar no WhatsApp</a>` : `<p class="empty">O dono ainda não cadastrou a chave Pix.</p>`}
+  </section>` : ""}`;
+}
+function payMessage(cents) {
+  const me = currentMe(), open = openSales(state.session.uid);
+  let left = cents;
+  const lines = [];
+  open.forEach((o) => {
+    if (left <= 0) return;
+    const used = Math.min(left, o.remaining);
+    left -= used;
+    lines.push(`• ${dateText(o.sale.at)}: ${o.sale.items.map((i) => `${i.qty}x ${i.name}`).join(", ")} (${money(used)}${used < o.remaining ? ", parcial" : ""})`);
+  });
+  return { lines, text: `Olá! Aqui é ${me?.name || "seu revendedor"}.\nPaguei ${money(cents)} por Pix.\n\nO que estou pagando:\n${lines.join("\n")}\n\nSegue o comprovante.` };
+}
+function afterPayRender() {
+  const input = $("pay-amount");
+  if (!input) return;
+  const cents = state.payAmount || 0, s = settings();
+  const link = $("wa-link");
+  if (link) {
+    const digits = String(s.whatsapp || "").replace(/\D/g, "");
+    const phone = digits && !digits.startsWith("55") ? `55${digits}` : digits;
+    link.href = `https://wa.me/${phone}?text=${encodeURIComponent(payMessage(cents).text)}`;
+  }
+  const qr = $("qr");
+  if (qr) {
+    qr.innerHTML = "";
+    if (window.QRCode && cents > 0) new QRCode(qr, { text: pixCode({ key: s.pixKey, name: s.pixName, city: s.pixCity, cents }), width: 190, height: 190, correctLevel: QRCode.CorrectLevel.M });
+    else qr.hidden = true;
+  }
+}
+function historyView() {
+  const me = state.session.uid;
+  const moves = [...values("sales").filter((s) => s.resellerId === me).map((x) => ({ ...x, t: "s" })), ...values("payments").filter((p) => p.resellerId === me).map((x) => ({ ...x, t: "p" }))].sort(byDateDesc);
+  const label = { pendente: ["Aguardando", "wait"], confirmado: ["Confirmado", ""], recusado: ["Recusado", "off"] };
+  return `<h1>Histórico</h1><section class="card">${moves.length ? `<div class="list">${moves.map((m) => m.t === "s"
+    ? `<div class="item"><div><b>Compra</b> ${m.canceled ? `<span class="tag off">Cancelada</span>` : ""}<br><span class="muted">${dateTime(m.at)} · ${esc(m.items.map((i) => `${i.qty}x ${i.name}`).join(", "))}</span></div><div class="money">${money(m.total)}</div></div>`
+    : `<div class="item"><div><b>Pagamento</b> <span class="tag ${label[m.status][1]}">${label[m.status][0]}</span><br><span class="muted">${dateTime(m.at)}</span></div><div class="money">${money(m.amount)}</div></div>`).join("")}</div>` : `<p class="empty">Suas compras e pagamentos vão aparecer aqui.</p>`}</section>`;
+}
+
+/* ---------- Janelas ---------- */
+function openModal(html) {
+  closeModal();
+  const w = document.createElement("div");
+  w.id = "modal-wrap";
+  w.innerHTML = `<div id="modal" role="dialog" aria-modal="true">${html}</div>`;
+  document.body.appendChild(w);
+  const first = w.querySelector("input, select, button");
+  if (first) first.focus();
+}
+function closeModal() { const m = $("modal-wrap"); if (m) m.remove(); if (state.pending) render(); }
+function confirmBox(text, label, onYes) {
+  pendingYes = onYes;
+  openModal(`<p>${esc(text)}</p><div class="row"><button class="btn" type="button" data-act="yes">${esc(label)}</button><button class="btn ghost" type="button" data-act="close">Voltar</button></div>`);
+}
+let pendingYes = null;
+function productForm(p) {
+  const isNew = !p;
+  return `<h2>${isNew ? "Novo produto" : "Editar produto"}</h2>
+  <form data-form="product" data-id="${esc(p?.id || "")}">
+    <label>Nome<input name="name" value="${esc(p?.name)}" required></label>
+    <div class="photo-field"><div id="photo-preview">${photoFieldHtml()}</div><div class="row"><span class="btn ghost small photo-pick">${draftPhoto ? "Trocar foto" : "Colocar foto"}<input id="photo-file" type="file" accept="image/*" data-change="photo" aria-label="Escolher foto do produto"></span><button class="btn ghost small" type="button" data-act="photo-remove">Tirar foto</button></div></div>
+    <div class="two">
+      <label>Custo (R$)<input name="cost" inputmode="decimal" value="${p ? moneyInput(costOf(p.id)) : ""}" required></label>
+      <label>Venda ao cliente (R$)<input name="price" inputmode="decimal" value="${p ? moneyInput(p.price) : ""}" required></label>
+      <label>Preço de revenda (R$)<input name="resalePrice" inputmode="decimal" value="${p ? moneyInput(p.resalePrice) : ""}" required></label>
+      <label>Avisar com estoque em<input name="minStock" inputmode="numeric" value="${p?.minStock ?? 3}"></label>
+    </div>
+    ${isNew ? `<label>Estoque inicial que já é seu e não entra na dívida<input name="stock" inputmode="numeric" value="0"></label>` : `<label>Corrigir quantidade em estoque<input name="stock" inputmode="numeric" value="${p.stock}"></label>`}
+    <div class="err" id="form-err" hidden></div>
+    <div class="row"><button class="btn" type="submit">Salvar</button><button class="btn ghost" type="button" data-act="close">Voltar</button>${!isNew ? `<button class="btn ghost" type="button" data-act="product-del" data-id="${esc(p.id)}">Apagar produto</button>` : ""}</div>
+  </form>`;
+}
+const purchaseDraft = { lines: [] };
+function purchaseHtml() {
+  const list = values("products").sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  if (!list.length) return `<h2>Entrada do fornecedor</h2><p>Cadastre um produto primeiro.</p><div class="row"><button class="btn" type="button" data-act="product-new">Novo produto</button><button class="btn ghost" type="button" data-act="close">Voltar</button></div>`;
+  const total = purchaseDraft.lines.reduce((a, l) => a + l.qty * l.cost, 0);
+  return `<h2>Entrada do fornecedor</h2>
+  <p class="muted">O estoque aumenta e o valor entra na dívida com o fornecedor.</p>
+  <form data-form="purchase-line">
+    <label>Produto<select name="productId" id="pl-product" data-change="pl-product">${list.map((p) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("")}</select></label>
+    <div class="two"><label>Quantidade<input name="qty" inputmode="numeric" required></label><label>Custo por unidade (R$)<input name="cost" id="pl-cost" inputmode="decimal" value="${moneyInput(costOf(list[0].id))}" required></label></div>
+    <div class="err" id="form-err" hidden></div>
+    <button class="btn ghost" type="submit">Adicionar à entrada</button>
+  </form>
+  ${purchaseDraft.lines.length ? `<div class="list">${purchaseDraft.lines.map((l, i) => `<div class="item"><div>${l.qty}x ${esc(l.name)}<br><span class="muted">${money(l.cost)} cada</span></div><div class="right"><div class="money">${money(l.qty * l.cost)}</div><button class="btn small ghost" type="button" data-act="pl-remove" data-i="${i}">Tirar</button></div></div>`).join("")}</div><div class="total"><span>Total</span><span>${money(total)}</span></div>` : ""}
+  <div class="row"><button class="btn" type="button" data-act="purchase-save" ${purchaseDraft.lines.length ? "" : "disabled"}>Lançar entrada</button><button class="btn ghost" type="button" data-act="close">Voltar</button></div>`;
+}
+function amountForm(title, form, amount, extra = "") {
+  return `<h2>${esc(title)}</h2><form data-form="${form}"${extra}>
+    <label>Valor (R$)<input name="amount" inputmode="decimal" value="${amount ? moneyInput(amount) : ""}" required></label>
+    <label>Observação (opcional)<input name="note"></label>
+    <div class="err" id="form-err" hidden></div>
+    <div class="row"><button class="btn" type="submit">Salvar</button><button class="btn ghost" type="button" data-act="close">Voltar</button></div>
+  </form>`;
+}
+function formError(text) { const e = $("form-err"); if (e) { e.textContent = text; e.hidden = false; } else toast(text); }
+const intOf = (v, fallback = 0) => { const n = parseInt(String(v).replace(/\D/g, ""), 10); return Number.isFinite(n) ? n : fallback; };
+
+/* ---------- Ações ---------- */
+async function guard(fn) { try { await fn(); } catch (e) { toast(friendlyError(e)); } }
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); toast("Copiado"); }
+  catch (e) { openModal(`<h2>Copie abaixo</h2><div class="pix-key">${esc(text)}</div><button class="btn" type="button" data-act="close">Fechar</button>`); }
+}
+const actions = {
+  drawer() { state.drawer = true; render(); },
+  "drawer-close"() { state.drawer = false; render(); },
+  go(el) { state.view = el.dataset.v; state.drawer = false; state.cart = {}; state.resellerOpen = null; state.payAmount = null; render(); window.scrollTo(0, 0); },
+  close() { closeModal(); },
+  yes() { const fn = pendingYes; pendingYes = null; closeModal(); if (fn) guard(fn); },
+  logout() { state.drawer = false; state.cart = {}; state.view = "inicio"; guard(() => store.logout()); },
+  "demo-login"(el) { state.view = el.dataset.u === "dono" ? "inicio" : "comprar"; guard(() => store.login(el.dataset.u, "1234")); },
+  "demo-reset"() { confirmBox("Voltar aos dados de exemplo e apagar o que você testou?", "Restaurar", async () => { state.drawer = false; await store.reset(); }); },
+  "first-owner"() {
+    openModal(`<h2>Criar a senha do dono</h2><p class="muted">Faça isso só uma vez. Depois entre com o usuário "ptk".</p><form data-form="first-owner"><label>Senha (mínimo 6 caracteres)<input name="pass" type="password" minlength="6" required></label><div class="err" id="form-err" hidden></div><div class="row"><button class="btn" type="submit">Criar</button><button class="btn ghost" type="button" data-act="close">Voltar</button></div></form>`);
+  },
+  cart(el) {
+    const id = el.dataset.id, p = state.data.products[id], next = (state.cart[id] || 0) + Number(el.dataset.d);
+    if (next < 0) return;
+    if (p && next > p.stock) return toast(`Só há ${p.stock} no estoque.`);
+    state.cart[id] = next;
+    render();
+  },
+  sell() {
+    const direct = state.sellTo === "direta";
+    const items = cartItems((p) => (direct ? p.price : p.resalePrice));
+    if (!items.length) return;
+    const sale = { id: uid(), at: Date.now(), kind: direct ? "direta" : "revenda", items, total: cartTotal(items), canceled: false, createdBy: "owner" };
+    if (direct) { sale.customer = state.customer.trim(); sale.resellerId = null; } else sale.resellerId = state.sellTo;
+    guard(async () => { await store.sell(sale); state.cart = {}; state.customer = ""; toast("Venda registrada"); render(); });
+  },
+  "reseller-buy"() {
+    const items = cartItems((p) => p.resalePrice);
+    if (!items.length) return;
+    const total = cartTotal(items);
+    confirmBox(`Confirmar compra a prazo de ${money(total)}?`, "Confirmar", async () => {
+      await store.sell({ id: uid(), at: Date.now(), kind: "revenda", resellerId: state.session.uid, items, total, canceled: false, createdBy: state.session.uid });
+      state.cart = {};
+      state.view = "pagar";
+      state.payAmount = null;
+      toast("Compra marcada na sua conta");
+      render();
+    });
+  },
+  "sale-cancel"(el) { confirmBox("Cancelar esta venda? Os produtos voltam para o estoque e o saldo é corrigido.", "Cancelar venda", () => store.cancelSale(el.dataset.id)); },
+  "pay-confirm"(el) { guard(async () => { await store.set("payments", el.dataset.id, { status: "confirmado", confirmedAt: Date.now() }); toast("Pagamento confirmado e abatido do saldo"); }); },
+  "pay-reject"(el) { confirmBox("Recusar este pagamento? O saldo do revendedor continua igual.", "Recusar", () => store.set("payments", el.dataset.id, { status: "recusado" })); },
+  "reseller-new"() {
+    openModal(`<h2>Novo revendedor</h2><form data-form="reseller"><label>Nome<input name="name" required></label><label>WhatsApp (opcional)<input name="phone" inputmode="tel"></label><div class="two"><label>Usuário de acesso<input name="username" autocapitalize="none" pattern="[A-Za-z0-9._\\-]+" title="Use letras e números, sem espaços" required></label><label>Senha (mínimo 6)<input name="password" minlength="6" required></label></div><div class="err" id="form-err" hidden></div><div class="row"><button class="btn" type="submit">Criar acesso</button><button class="btn ghost" type="button" data-act="close">Voltar</button></div></form>`);
+  },
+  "reseller-open"(el) { state.resellerOpen = el.dataset.id; render(); window.scrollTo(0, 0); },
+  "reseller-close"() { state.resellerOpen = null; render(); },
+  "reseller-toggle"(el) { const r = state.data.resellers[el.dataset.id]; guard(() => store.set("resellers", r.id, { active: !r.active })); },
+  "manual-pay"(el) { openModal(amountForm("Registrar recebimento", "manual-pay", resellerBalance(el.dataset.id), ` data-id="${esc(el.dataset.id)}"`)); },
+  "product-new"() { draftPhoto = ""; openModal(productForm(null)); },
+  "product-edit"(el) { const p = state.data.products[el.dataset.id]; draftPhoto = photoOf(p); openModal(productForm(p)); },
+  "photo-remove"() { draftPhoto = ""; $("photo-preview").innerHTML = photoFieldHtml(); },
+  "product-del"(el) { const id = el.dataset.id; confirmBox("Apagar este produto? O histórico de vendas continua.", "Apagar", async () => { await store.del("products", id); await store.del("productCosts", id); }); },
+  purchase() { purchaseDraft.lines = []; purchaseDraft.shipment = null; openModal(purchaseHtml()); },
+  "ship-check"(el) {
+    const s = state.data.shipments[el.dataset.id];
+    openModal(`<h2>Conferir envio</h2><p><b>${esc(s.description)}</b></p><div class="total"><span>Valor informado</span><span>${money(s.total)}</span></div><p class="muted">Lance por produto para somar no estoque. Se confirmar só o valor, entra na dívida e o estoque não muda.</p><div class="row"><button class="btn" type="button" data-act="ship-lines" data-id="${esc(s.id)}">Lançar por produto</button><button class="btn ghost" type="button" data-act="ship-value" data-id="${esc(s.id)}">Confirmar só o valor</button><button class="btn ghost" type="button" data-act="ship-reject" data-id="${esc(s.id)}">Recusar</button><button class="btn ghost" type="button" data-act="close">Voltar</button></div>`);
+  },
+  "ship-lines"(el) { purchaseDraft.lines = []; purchaseDraft.shipment = el.dataset.id; openModal(purchaseHtml()); },
+  "ship-value"(el) {
+    const s = state.data.shipments[el.dataset.id];
+    guard(async () => {
+      await store.addPurchase({ id: uid(), at: Date.now(), items: [], total: s.total, note: s.description });
+      await store.set("shipments", s.id, { status: "confirmado" });
+      closeModal();
+      toast("Envio confirmado e somado na dívida");
+    });
+  },
+  "ship-reject"(el) { const id = el.dataset.id; closeModal(); guard(async () => { await store.set("shipments", id, { status: "recusado" }); toast("Envio recusado"); }); },
+  "copy-sup"(el) { copyText(el.dataset.text === "key" ? (state.data.supplierInfo.main || {}).pixKey : supPixCode()); },
+  "supplier-login"() { openModal(`<h2>Acesso do fornecedor</h2><form data-form="supplier-login"><label>Senha (mínimo 6 caracteres)<input name="pass" minlength="6" required></label><div class="err" id="form-err" hidden></div><div class="row"><button class="btn" type="submit">Criar</button><button class="btn ghost" type="button" data-act="close">Voltar</button></div></form>`); },
+  "pl-remove"(el) { purchaseDraft.lines.splice(Number(el.dataset.i), 1); openModal(purchaseHtml()); },
+  "purchase-save"() {
+    const items = purchaseDraft.lines.map((l) => ({ ...l }));
+    if (!items.length) return;
+    guard(async () => {
+      const ship = purchaseDraft.shipment && state.data.shipments[purchaseDraft.shipment];
+      await store.addPurchase({ id: uid(), at: Date.now(), items, total: items.reduce((a, l) => a + l.qty * l.cost, 0), note: ship ? ship.description : "" });
+      if (ship) await store.set("shipments", ship.id, { status: "confirmado" });
+      purchaseDraft.lines = [];
+      purchaseDraft.shipment = null;
+      closeModal();
+      toast("Entrada lançada: estoque e dívida atualizados");
+    });
+  },
+  "purchase-del"(el) { confirmBox("Apagar esta entrada? O estoque e a dívida serão corrigidos.", "Apagar", () => store.removePurchase(el.dataset.id)); },
+  "supplier-pay"(el) { openModal(supplierPayHtml(Number(el.dataset.amount) || 0)); renderSupQr(); },
+  "supplier-pay-del"(el) { confirmBox("Apagar este pagamento? A dívida volta a aumentar.", "Apagar", () => store.del("supplierPayments", el.dataset.id)); },
+  week(el) { state.weekOffset = Math.min(0, state.weekOffset + Number(el.dataset.d)); render(); },
+  copy(el) {
+    const s = settings();
+    copyText(el.dataset.text === "key" ? s.pixKey : pixCode({ key: s.pixKey, name: s.pixName, city: s.pixCity, cents: state.payAmount || 0 }));
+  },
+  "wa-send"(el, ev) {
+    const cents = state.payAmount || 0;
+    const me = state.session.uid, pendTotal = pendingPayments(me).reduce((a, p) => a + p.amount, 0);
+    if (cents <= 0 || cents > resellerBalance(me) - pendTotal) { ev.preventDefault(); return toast("Confira o valor do pagamento."); }
+    const { lines } = payMessage(cents);
+    /* Deixa o link abrir o WhatsApp e só depois atualiza a tela */
+    setTimeout(() => guard(async () => {
+      const id = uid();
+      await store.set("payments", id, { at: Date.now(), resellerId: me, amount: cents, status: "pendente", summary: lines.join(" ").replace(/• /g, "") });
+      state.payAmount = null;
+      toast("Pagamento enviado para confirmação");
+      render();
+    }), 50);
+    return "keep";
+  }
+};
+document.addEventListener("click", (ev) => {
+  const el = ev.target.closest("[data-act]");
+  if (!el) return;
+  const act = actions[el.dataset.act];
+  if (!act) return;
+  const r = act(el, ev);
+  if (el.tagName === "A" && r !== "keep") ev.preventDefault();
+});
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") { if ($("modal-wrap")) closeModal(); else if (state.drawer) { state.drawer = false; render(); } } });
+document.addEventListener("input", (ev) => {
+  const el = ev.target;
+  if (el.dataset.input === "pay-amount") {
+    const v = parseMoney(el.value);
+    state.payAmount = Number.isNaN(v) ? 0 : v;
+    afterPayRender();
+  }
+  if (el.dataset.change === "customer") state.customer = el.value;
+  if (el.dataset.input === "sup-amount") renderSupQr();
+});
+document.addEventListener("change", (ev) => {
+  const el = ev.target;
+  if (el.dataset.change === "sell-to") { state.sellTo = el.value; el.blur(); state.pending = false; render(); }
+  if (el.dataset.change === "photo" && el.files && el.files[0]) {
+    shrinkPhoto(el.files[0]).then((data) => { draftPhoto = data; $("photo-preview").innerHTML = photoFieldHtml(); }).catch((e) => formError(friendlyError(e)));
+  }
+  if (el.dataset.change === "pl-product") { const c = $("pl-cost"); if (c) c.value = moneyInput(costOf(el.value)); }
+});
+const forms = {
+  async login(d, form) {
+    const err = $("login-err");
+    err.hidden = true;
+    try { await store.login(d.user, d.pass); }
+    catch (e) { err.textContent = friendlyError(e); err.hidden = false; }
+  },
+  async "first-owner"(d) { await store.createOwner(d.pass); closeModal(); },
+  async settings(d) {
+    const { supPixKey, supPixName, supPixCity, ...main } = d;
+    await store.set("settings", "main", main);
+    await store.set("supplierInfo", "main", { pixKey: supPixKey.trim(), pixName: supPixName.trim(), pixCity: supPixCity.trim() });
+    toast("Configurações salvas");
+  },
+  async shipment(d, form) {
+    const total = parseMoney(d.total);
+    if (!total || Number.isNaN(total)) return toast("Informe o valor total.");
+    await store.set("shipments", uid(), { at: Date.now(), description: d.description.trim(), total, status: "pendente" });
+    form.reset();
+    toast("Envio mandado para conferência");
+  },
+  async "supplier-info"(d) { await store.set("supplierInfo", "main", { pixKey: d.pixKey.trim(), pixName: d.pixName.trim(), pixCity: d.pixCity.trim() }); toast("Chave Pix salva"); },
+  async "supplier-login"(d) { await store.createSupplier(d.pass); closeModal(); toast("Acesso do fornecedor criado"); },
+  async product(d, form) {
+    const cost = parseMoney(d.cost), price = parseMoney(d.price), resalePrice = parseMoney(d.resalePrice);
+    if ([cost, price, resalePrice].some(Number.isNaN)) return formError("Confira os valores em reais.");
+    const id = form.dataset.id || uid();
+    await store.set("products", id, { name: d.name.trim(), price, resalePrice, minStock: intOf(d.minStock), stock: intOf(d.stock), photo: draftPhoto });
+    await store.set("productCosts", id, { cost });
+    closeModal();
+    toast("Produto salvo");
+  },
+  async "purchase-line"(d) {
+    const qty = intOf(d.qty), cost = parseMoney(d.cost), p = state.data.products[d.productId];
+    if (!qty || Number.isNaN(cost)) return formError("Informe a quantidade e o custo.");
+    purchaseDraft.lines.push({ productId: d.productId, name: p.name, qty, cost });
+    openModal(purchaseHtml());
+  },
+  async reseller(d) {
+    await store.createReseller({ name: d.name.trim(), phone: d.phone.trim(), username: d.username, password: d.password });
+    closeModal();
+    openModal(`<h2>Acesso criado</h2><p>Mande para ${esc(d.name)}:</p><div class="pix-key">Usuário: ${esc(d.username.trim().toLowerCase())}<br>Senha: ${esc(d.password)}</div><button class="btn" type="button" data-act="close">Fechar</button>`);
+  },
+  async "manual-pay"(d, form) {
+    const amount = parseMoney(d.amount);
+    if (!amount || Number.isNaN(amount)) return formError("Informe o valor.");
+    const now = Date.now();
+    await store.set("payments", uid(), { at: now, confirmedAt: now, resellerId: form.dataset.id, amount, status: "confirmado", summary: d.note.trim() || "Registrado pelo dono" });
+    closeModal();
+    toast("Recebimento registrado");
+  },
+  async "supplier-pay"(d) {
+    const amount = parseMoney(d.amount);
+    if (!amount || Number.isNaN(amount)) return formError("Informe o valor.");
+    await store.set("supplierPayments", uid(), { at: Date.now(), amount, note: d.note.trim() });
+    closeModal();
+    toast("Pagamento abatido da dívida");
+  }
+};
+document.addEventListener("submit", async (ev) => {
+  const form = ev.target, name = form.dataset.form;
+  if (!name || !forms[name]) return;
+  ev.preventDefault();
+  const d = Object.fromEntries(new FormData(form).entries());
+  try { await forms[name](d, form); }
+  catch (e) { const t = friendlyError(e); if ($("form-err")) formError(t); else if (name !== "login") toast(t); }
+});
+
+Promise.resolve(store.start((session, data) => {
+  const was = !!state.session;
+  state.session = session;
+  state.data = data;
+  if (session && !was) { state.view = { owner: "inicio", supplier: "forn" }[session.role] || "comprar"; document.getElementById("root").innerHTML = ""; }
+  if (!session && was) document.getElementById("root").innerHTML = "";
+  render();
+})).catch(() => { $("root").innerHTML = `<div id="login"><p class="err">Não consegui carregar o app. Confira a internet e abra de novo.</p></div>`; });
+</script>
+
+</body>
+</html>
