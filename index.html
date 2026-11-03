@@ -126,7 +126,14 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--neon); outl
 <script>
 "use strict";
 /* Para colocar no ar com logins reais, cole aqui a configuração do Firebase. Com null, roda em modo demonstração. */
-const FIREBASE_CONFIG = null;
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCY6IGSJguk1SdihJgeRpsBV9wCndvwIfc",
+  authDomain: "prazo-certo-f37cb.firebaseapp.com",
+  projectId: "prazo-certo-f37cb",
+  storageBucket: "prazo-certo-f37cb.firebasestorage.app",
+  messagingSenderId: "841364372751",
+  appId: "1:841364372751:web:d5dc7b415f3f14e8ac527a"
+};
 const EMAIL_DOMAIN = "prazocerto.app";
 const OWNER_USER = "ptk";
 const SUPPLIER_USER = "vorcaro";
@@ -224,11 +231,11 @@ function createDemoStore() {
   const addMuriel = () => {
     delete db.logins.dono;
     ["shipments", "supplierInfo"].forEach((c) => { if (!db.data[c]) db.data[c] = {}; });
-    db.logins.vorcaro = { hash: "40f475ba7443c1fa86b84aa95cd2305406824d37dd6c127240e35b34c51665f4", role: "supplier", uid: "supplier" };
+    db.logins.vorcaro = { hash: "", role: "supplier", uid: "supplier" };
     if (db.data.settings.main && db.data.settings.main.supplierName === "Fornecedor exemplo") db.data.settings.main.supplierName = "Vorcaro";
-    db.logins.ptk = { hash: "7ace998e69be20f09e760cc3325fe07f7753630a2e99cdf0eb95a01c2ac4b39d", role: "owner", uid: "owner" };
+    db.logins.ptk = { hash: "", role: "owner", uid: "owner" };
     if (db.logins.muriel) return;
-    db.logins.muriel = { hash: "ca614e97277b2d62aaf177ab4a5339fd3f7e69e4a194b422f7080720f87b3f24", role: "reseller", uid: "r-muriel" };
+    db.logins.muriel = { hash: "", role: "reseller", uid: "r-muriel" };
     db.data.resellers["r-muriel"] = { id: "r-muriel", name: "Muriel", phone: "", username: "muriel", active: true };
   };
   addMuriel();
