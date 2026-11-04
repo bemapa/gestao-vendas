@@ -416,7 +416,7 @@ function createFirebaseStore(cfg) {
 
 /* ---------- Estado e cálculos ---------- */
 const store = FIREBASE_CONFIG ? createFirebaseStore(FIREBASE_CONFIG) : createDemoStore();
-const state = { session: null, data: Object.fromEntries(COLLECTIONS.map((c) => [c, {}])), view: "inicio", drawer: false, cart: {}, sellTo: "direta", customer: "", weekOffset: 0, resellerOpen: null, payAmount: null, pending: false };
+const state = { session: null, data: Object.fromEntries(COLLECTIONS.map((c) => [c, {}])), view: "inicio", drawer: false, cart: {}, sellTo: "direta", customer: "", weekOffset: 0, resellerOpen: null, payAmount: null, payPick: {}, pending: false };
 const settings = () => state.data.settings.main || {};
 const liveSales = () => values("sales").filter((s) => !s.canceled);
 const costOf = (productId) => state.data.productCosts[productId]?.cost || 0;
@@ -427,17 +427,34 @@ function resellerBalance(id) {
   return bought - paid;
 }
 const pendingPayments = (id) => values("payments").filter((p) => p.status === "pendente" && (!id || p.resellerId === id));
-/* O que foi pago abate as compras mais antigas primeiro */
-function openSales(id) {
-  let paid = values("payments").filter((p) => p.resellerId === id && p.status === "confirmado").reduce((a, p) => a + p.amount, 0);
-  const open = [];
+/* O que falta pagar, produto por produto. Pagamento por item abate aquele produto; valor avulso abate as compras mais antigas. */
+function openItems(id, countPending) {
+  const lines = [];
   liveSales().filter((s) => s.resellerId === id).sort((a, b) => a.at - b.at).forEach((s) => {
-    const used = Math.min(paid, s.total);
-    paid -= used;
-    if (s.total - used > 0) open.push({ sale: s, remaining: s.total - used });
+    s.items.forEach((it) => lines.push({ key: `${it.productId}|${it.price}`, productId: it.productId, name: it.name, price: it.price, qty: it.qty }));
   });
-  return open;
+  let credit = 0;
+  values("payments").filter((p) => p.resellerId === id && (p.status === "confirmado" || (countPending && p.status === "pendente"))).forEach((p) => {
+    if (p.items && p.items.length) {
+      p.items.forEach((pi) => {
+        let left = pi.qty;
+        lines.filter((l) => l.key === pi.key).forEach((l) => { const used = Math.min(left, l.qty); l.qty -= used; left -= used; });
+      });
+    } else if (p.status === "confirmado") credit += p.amount;
+  });
+  const groups = {};
+  lines.forEach((l) => {
+    let value = l.qty * l.price;
+    const used = Math.min(credit, value);
+    credit -= used;
+    value -= used;
+    if (value <= 0) return;
+    const g = groups[l.key] || (groups[l.key] = { key: l.key, productId: l.productId, name: l.name, price: l.price, value: 0 });
+    g.value += value;
+  });
+  return Object.values(groups).map((g) => ({ ...g, qty: Math.ceil(g.value / g.price) })).sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
 }
+const pickValue = (g, n) => Math.min(n * g.price, g.value);
 const supplierDebt = () => values("supplierPurchases").reduce((a, p) => a + p.total, 0) - values("supplierPayments").reduce((a, p) => a + p.amount, 0);
 const receivableTotal = () => values("resellers").reduce((a, r) => a + Math.max(resellerBalance(r.id), 0), 0);
 function weekRange(offset) {
@@ -665,6 +682,7 @@ function resellersView() {
     <div class="stats"><div class="stat hot"><div class="muted">Saldo devedor</div><div class="v">${money(resellerBalance(open.id))}</div></div><div class="stat"><div class="muted">Usuário de acesso</div><div class="v" style="font-size:18px">${esc(open.username || "-")}</div></div></div>
     <div class="row"><button class="btn" type="button" data-act="manual-pay" data-id="${esc(open.id)}">Registrar recebimento</button><button class="btn ghost" type="button" data-act="reseller-toggle" data-id="${esc(open.id)}">${open.active ? "Desativar acesso" : "Reativar acesso"}</button></div>
     ${pend.length ? `<section class="card"><h2>Para confirmar</h2><div class="list">${pend.map(paymentRow).join("")}</div></section>` : ""}
+    ${(() => { const g = openItems(open.id, false); return g.length ? `<section class="card"><h2>Falta pagar</h2><div class="list">${g.map((x) => `<div class="item"><div>${esc(x.name)}<br><span class="muted">${x.qty} un.</span></div><div class="money">${money(x.value)}</div></div>`).join("")}</div></section>` : ""; })()}
     <section class="card"><h2>Compras</h2>${sales.length ? `<div class="list">${sales.map((s) => saleRow(s, true)).join("")}</div>` : `<p class="empty">Nenhuma compra ainda.</p>`}</section>
     <section class="card"><h2>Pagamentos</h2>${pays.length ? `<div class="list">${pays.map((p) => `<div class="item"><div>${dateTime(p.confirmedAt || p.at)}<br><span class="muted">${esc(p.summary || "")}</span></div><div class="right"><div class="money">${money(p.amount)}</div><span class="tag ${p.status === "recusado" ? "off" : ""}">${p.status === "recusado" ? "Recusado" : "Confirmado"}</span></div></div>`).join("")}</div>` : `<p class="empty">Nenhum pagamento ainda.</p>`}</section>`;
   }
@@ -751,45 +769,48 @@ function payView() {
   const me = state.session.uid, bal = resellerBalance(me), s = settings();
   const pend = pendingPayments(me);
   const pendTotal = pend.reduce((a, p) => a + p.amount, 0);
-  const open = openSales(me);
-  const toPay = Math.max(bal - pendTotal, 0);
-  if (state.payAmount == null || state.payAmount > toPay) state.payAmount = toPay;
+  const groups = openItems(me, true);
+  groups.forEach((g) => { if ((state.payPick[g.key] || 0) > g.qty) state.payPick[g.key] = g.qty; });
+  const total = groups.reduce((a, g) => a + pickValue(g, state.payPick[g.key] || 0), 0);
+  state.payAmount = total;
   return `<h1>Minha conta</h1>
   <div class="stats"><div class="stat hot"><div class="muted">Saldo a pagar</div><div class="v">${money(bal)}</div></div>
   ${pend.length ? `<div class="stat warn"><div class="muted">Aguardando confirmação</div><div class="v">${money(pendTotal)}</div></div>` : ""}</div>
-  ${open.length ? `<section class="card"><h2>O que está em aberto</h2><div class="list">${open.map((o) => `<div class="item"><div>${dateText(o.sale.at)}<br><span class="muted">${esc(o.sale.items.map((i) => `${i.qty}x ${i.name}`).join(", "))}</span></div><div class="money">${money(o.remaining)}</div></div>`).join("")}</div></section>` : `<section class="card"><p class="empty">Você não tem nada em aberto.</p></section>`}
-  ${toPay > 0 ? `<section class="card"><h2>Pagar por Pix</h2>
-    ${s.pixKey ? `<label>Valor do pagamento<input id="pay-amount" inputmode="decimal" value="${moneyInput(state.payAmount)}" data-input="pay-amount"></label>
-    <div><div class="muted">Chave Pix de ${esc(s.pixName || "recebedor")}</div><div class="pix-key">${esc(s.pixKey)}</div></div>
+  ${groups.length ? `<section class="card"><div class="head"><h2>O que você quer pagar agora?</h2><button class="btn small ghost" type="button" data-act="pay-all">Marcar tudo</button></div>
+    <div class="list">${groups.map((g) => {
+      const n = state.payPick[g.key] || 0, p = state.data.products[g.productId];
+      return `<div class="item"><div class="with-thumb">${thumb(p || { name: g.name })}<div><b>${esc(g.name)}</b><br><span class="muted">Falta pagar: ${g.qty} un. (${money(g.value)})</span><br><span class="money">${money(g.price)} cada</span></div></div>
+      <div class="qty"><button type="button" data-act="pay-pick" data-k="${esc(g.key)}" data-d="-1" aria-label="Pagar uma unidade a menos de ${esc(g.name)}">−</button><span>${n}</span><button type="button" data-act="pay-pick" data-k="${esc(g.key)}" data-d="1" aria-label="Pagar uma unidade a mais de ${esc(g.name)}">+</button></div></div>`;
+    }).join("")}</div>
+    <div class="total"><span>Pagando agora</span><span>${money(total)}</span></div>
+  </section>
+  ${total > 0 ? `<section class="card"><h2>Pagar por Pix</h2>
+    ${s.pixKey ? `<div><div class="muted">Chave Pix de ${esc(s.pixName || "recebedor")}</div><div class="pix-key">${esc(s.pixKey)}</div></div>
     <button class="btn ghost wide" type="button" data-act="copy" data-text="key">Copiar chave Pix</button>
     <div id="qr" aria-label="QR Code do Pix"></div>
     <button class="btn ghost wide" type="button" data-act="copy" data-text="code">Copiar Pix copia e cola</button>
     <p class="note">Depois de pagar, toque no botão abaixo. A mensagem já vai com o que você está pagando. No WhatsApp, anexe o comprovante.</p>
     <a id="wa-link" class="btn wide" target="_blank" rel="noopener" href="#" data-act="wa-send">Já paguei: enviar no WhatsApp</a>` : `<p class="empty">O dono ainda não cadastrou a chave Pix.</p>`}
-  </section>` : ""}`;
+  </section>` : `<p class="note">Use o + para escolher o que você vai pagar. O Pix aparece com o valor certo.</p>`}` : `<section class="card"><p class="empty">${pend.length ? "Tudo já foi enviado. Falta o dono confirmar." : "Você não tem nada em aberto."}</p></section>`}`;
 }
 function payMessage(cents) {
-  const me = currentMe(), open = openSales(state.session.uid);
-  let left = cents;
-  const lines = [];
-  open.forEach((o) => {
-    if (left <= 0) return;
-    const used = Math.min(left, o.remaining);
-    left -= used;
-    lines.push(`• ${dateText(o.sale.at)}: ${o.sale.items.map((i) => `${i.qty}x ${i.name}`).join(", ")} (${money(used)}${used < o.remaining ? ", parcial" : ""})`);
+  const me = currentMe(), groups = openItems(state.session.uid, true);
+  const items = [], lines = [];
+  groups.forEach((g) => {
+    const n = state.payPick[g.key] || 0;
+    if (!n) return;
+    items.push({ key: g.key, productId: g.productId, name: g.name, qty: n, price: g.price });
+    lines.push(`• ${n}x ${g.name} (${money(pickValue(g, n))})`);
   });
-  return { lines, text: `Olá! Aqui é ${me?.name || "seu revendedor"}.\nPaguei ${money(cents)} por Pix.\n\nO que estou pagando:\n${lines.join("\n")}\n\nSegue o comprovante.` };
+  return { items, lines, text: `Olá! Aqui é ${me?.name || "seu revendedor"}.\nPaguei ${money(cents)} por Pix.\n\nO que estou pagando:\n${lines.join("\n")}\n\nSegue o comprovante.` };
 }
 function afterPayRender() {
-  const input = $("pay-amount");
-  if (!input) return;
-  const cents = state.payAmount || 0, s = settings();
   const link = $("wa-link");
-  if (link) {
-    const digits = String(s.whatsapp || "").replace(/\D/g, "");
-    const phone = digits && !digits.startsWith("55") ? `55${digits}` : digits;
-    link.href = `https://wa.me/${phone}?text=${encodeURIComponent(payMessage(cents).text)}`;
-  }
+  if (!link) return;
+  const cents = state.payAmount || 0, s = settings();
+  const digits = String(s.whatsapp || "").replace(/\D/g, "");
+  const phone = digits && !digits.startsWith("55") ? `55${digits}` : digits;
+  link.href = `https://wa.me/${phone}?text=${encodeURIComponent(payMessage(cents).text)}`;
   const qr = $("qr");
   if (qr) {
     qr.innerHTML = "";
@@ -875,7 +896,7 @@ async function copyText(text) {
 const actions = {
   drawer() { state.drawer = true; render(); },
   "drawer-close"() { state.drawer = false; render(); },
-  go(el) { state.view = el.dataset.v; state.drawer = false; state.cart = {}; state.resellerOpen = null; state.payAmount = null; render(); window.scrollTo(0, 0); },
+  go(el) { state.view = el.dataset.v; state.drawer = false; state.cart = {}; state.resellerOpen = null; state.payAmount = null; state.payPick = {}; render(); window.scrollTo(0, 0); },
   close() { closeModal(); },
   yes() { const fn = pendingYes; pendingYes = null; closeModal(); if (fn) guard(fn); },
   logout() { state.drawer = false; state.cart = {}; state.view = "inicio"; guard(() => store.logout()); },
@@ -966,16 +987,24 @@ const actions = {
     const s = settings();
     copyText(el.dataset.text === "key" ? s.pixKey : pixCode({ key: s.pixKey, name: s.pixName, city: s.pixCity, cents: state.payAmount || 0 }));
   },
+  "pay-pick"(el) {
+    const g = openItems(state.session.uid, true).find((x) => x.key === el.dataset.k);
+    if (!g) return;
+    state.payPick[g.key] = Math.max(0, Math.min(g.qty, (state.payPick[g.key] || 0) + Number(el.dataset.d)));
+    render();
+  },
+  "pay-all"() {
+    openItems(state.session.uid, true).forEach((g) => { state.payPick[g.key] = g.qty; });
+    render();
+  },
   "wa-send"(el, ev) {
-    const cents = state.payAmount || 0;
-    const me = state.session.uid, pendTotal = pendingPayments(me).reduce((a, p) => a + p.amount, 0);
-    if (cents <= 0 || cents > resellerBalance(me) - pendTotal) { ev.preventDefault(); return toast("Confira o valor do pagamento."); }
-    const { lines } = payMessage(cents);
+    const cents = state.payAmount || 0, me = state.session.uid;
+    if (cents <= 0) { ev.preventDefault(); return toast("Escolha o que você vai pagar."); }
+    const { items, lines } = payMessage(cents);
     /* Deixa o link abrir o WhatsApp e só depois atualiza a tela */
     setTimeout(() => guard(async () => {
-      const id = uid();
-      await store.set("payments", id, { at: Date.now(), resellerId: me, amount: cents, status: "pendente", summary: lines.join(" ").replace(/• /g, "") });
-      state.payAmount = null;
+      await store.set("payments", uid(), { at: Date.now(), resellerId: me, amount: cents, status: "pendente", items, summary: lines.join(" ").replace(/• /g, "") });
+      state.payPick = {};
       toast("Pagamento enviado para confirmação");
       render();
     }), 50);
